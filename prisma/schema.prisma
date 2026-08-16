@@ -1,13 +1,51 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// 1. User Model: Stores user authentication and profile details
+model User {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String    @unique
+  password String
+  issues   Issue[]   // One-to-many relationship: Issues assigned to this user
+  comments Comment[] // One-to-many relationship: Comments made by this user
+}
+
+// 2. Issue Model: Core entity for the Issue Tracking System
+model Issue {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  type        String    // e.g., "Bug" or "Task"
+  priority    String    // e.g., "Low", "Medium", "High"
+  status      String    // e.g., "Open", "In Progress", "Resolved", "Closed"
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  
+  // Assignee: The user responsible for resolving the issue
+  assigneeId  String?   @db.ObjectId
+  assignee    User?     @relation(fields: [assigneeId], references: [id])
+  
+  comments    Comment[]
+}
+
+// 3. Comment Model: Allows users to discuss specific issues
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  text      String
+  createdAt DateTime @default(now())
+  
+  // The issue this comment belongs to
+  issueId   String   @db.ObjectId
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  
+  // The user who authored the comment
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
 }
