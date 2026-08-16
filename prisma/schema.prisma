@@ -13,6 +13,7 @@ model User {
   name     String
   email    String    @unique
   password String
+  role     String    @default("USER")
   issues   Issue[]   // One-to-many relationship: Issues assigned to this user
   comments Comment[] // One-to-many relationship: Comments made by this user
 }
