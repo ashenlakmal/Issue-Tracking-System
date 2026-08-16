@@ -1,32 +1,40 @@
-<!-- src/routes/login/+page.svelte -->
 <script lang="ts">
-	// State variables for enterprise login form
-	let email = '';
-	let password = '';
-	let rememberMe = false;
+	import { enhance } from '$app/forms';
+	import { toast } from 'svelte-sonner';
 
-	const handleLogin = () => {
-		// Authentication logic will be added here later
-		console.log('Enterprise Login attempt:', { email, password, rememberMe });
-	};
+	// In Svelte 5, we use $state() for reactive variables
+	let email = $state('');
+	let password = $state('');
+	let rememberMe = $state(false);
+	let isLoading = $state(false);
 </script>
 
 <!-- Main Container: Full screen, Split layout for Large screens -->
 <div class="flex min-h-screen bg-white font-sans">
-	<!-- Left Side: Branding / Marketing (Visible only on Desktop) -->
-	<!-- Using Svelte's official orange brand color: #ff3e00 -->
+	<!-- Left Side: Dark Premium Branding (Visible only on Desktop) -->
 	<div
-		class="relative hidden items-center justify-center overflow-hidden bg-[#ff3e00] lg:flex lg:w-1/2"
+		class="relative hidden items-center justify-center overflow-hidden bg-slate-950 lg:flex lg:w-1/2"
 	>
-		<!-- Abstract Background Gradient overlay -->
-		<div class="absolute inset-0 bg-gradient-to-br from-[#ff3e00] to-[#c73100] opacity-95"></div>
+		<!-- Subtle dotted grid pattern for a techy feel -->
+		<div
+			class="absolute inset-0 opacity-20"
+			style="background-image: radial-gradient(#ff3e00 1px, transparent 1px); background-size: 32px 32px;"
+		></div>
+
+		<!-- Glowing orange orbs in the background -->
+		<div
+			class="absolute top-1/4 left-1/4 h-96 w-96 animate-pulse rounded-full bg-[#ff3e00] opacity-20 mix-blend-screen blur-[128px] filter"
+		></div>
+		<div
+			class="absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-orange-500 opacity-10 mix-blend-screen blur-[128px] filter"
+		></div>
 
 		<!-- Branding Content -->
 		<div class="relative z-10 max-w-xl p-12 text-white">
 			<div class="mb-8 flex items-center space-x-3">
-				<!-- A simple clean SVG Logo -->
+				<!-- Logo -->
 				<svg
-					class="h-10 w-10 text-white"
+					class="h-10 w-10 text-[#ff3e00]"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
@@ -39,29 +47,32 @@
 						d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
 					></path>
 				</svg>
-				<h1 class="text-3xl font-extrabold tracking-wider uppercase opacity-90">
-					Tracker<span class="text-orange-200">Pro</span>
+				<h1 class="text-3xl font-extrabold tracking-wider text-slate-100 uppercase">
+					Tracker<span class="text-[#ff3e00]">Pro</span>
 				</h1>
 			</div>
 
-			<h2 class="mb-6 text-5xl leading-tight font-bold tracking-tight">
-				Manage your <br /> issues with clarity.
+			<h2 class="mb-6 text-5xl leading-tight font-bold tracking-tight text-slate-100">
+				Manage your <br /> issues with
+				<span class="bg-gradient-to-r from-[#ff3e00] to-orange-400 bg-clip-text text-transparent"
+					>clarity.</span
+				>
 			</h2>
-			<p class="mb-8 text-lg font-medium text-orange-100">
+			<p class="mb-8 text-lg leading-relaxed font-medium text-slate-400">
 				The enterprise-grade issue tracking system designed for high-performing software engineering
 				teams.
 			</p>
 
 			<!-- Feature highlights -->
-			<div class="flex space-x-6 text-sm font-semibold text-orange-50">
+			<div class="flex space-x-6 text-sm font-semibold text-slate-300">
 				<div class="flex items-center">
-					<span class="mr-2 h-2 w-2 rounded-full bg-white"></span> Fast
+					<span class="mr-2 h-2 w-2 rounded-full bg-[#ff3e00] shadow-[0_0_8px_#ff3e00]"></span> Fast
 				</div>
 				<div class="flex items-center">
-					<span class="mr-2 h-2 w-2 rounded-full bg-white"></span> Secure
+					<span class="mr-2 h-2 w-2 rounded-full bg-[#ff3e00] shadow-[0_0_8px_#ff3e00]"></span> Secure
 				</div>
 				<div class="flex items-center">
-					<span class="mr-2 h-2 w-2 rounded-full bg-white"></span> Reliable
+					<span class="mr-2 h-2 w-2 rounded-full bg-[#ff3e00] shadow-[0_0_8px_#ff3e00]"></span> Reliable
 				</div>
 			</div>
 		</div>
@@ -69,9 +80,9 @@
 
 	<!-- Right Side: Login Form -->
 	<div
-		class="relative flex w-full flex-col justify-center px-8 sm:px-16 lg:w-1/2 lg:px-24 xl:px-32"
+		class="relative flex w-full flex-col justify-center bg-white px-8 sm:px-16 lg:w-1/2 lg:px-24 xl:px-32"
 	>
-		<!-- Mobile Logo (Visible only on small screens) -->
+		<!-- Mobile Logo -->
 		<div class="mb-10 flex items-center space-x-2 lg:hidden">
 			<svg
 				class="h-8 w-8 text-[#ff3e00]"
@@ -98,7 +109,25 @@
 				Please enter your details to access your dashboard.
 			</p>
 
-			<form class="space-y-6" on:submit|preventDefault={handleLogin}>
+			<form 
+                method="POST" 
+                class="space-y-6"
+                use:enhance={() => {
+                    isLoading = true;
+                    
+                    return async ({ result, update }) => {
+                        isLoading = false;
+                        
+                        if (result.type === 'success') {
+                            toast.success((result.data as any)?.message || 'Login Successful!');
+                        } else if (result.type === 'failure') {
+                            toast.error((result.data as any)?.error || 'Authentication failed.');
+                        }
+                        
+                        update(); 
+                    };
+                }}
+            >
 				<!-- Email Input -->
 				<div>
 					<label for="email" class="mb-2 block text-sm font-semibold text-gray-700"
@@ -106,7 +135,6 @@
 					>
 					<div class="relative">
 						<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-							<!-- Mail Icon -->
 							<svg
 								class="h-5 w-5 text-gray-400"
 								fill="none"
@@ -123,6 +151,7 @@
 						</div>
 						<input
 							id="email"
+							name="email"
 							type="email"
 							bind:value={email}
 							class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3.5 pr-4 pl-11 text-gray-900 transition-all duration-200 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm"
@@ -139,7 +168,6 @@
 					>
 					<div class="relative">
 						<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-							<!-- Lock Icon -->
 							<svg
 								class="h-5 w-5 text-gray-400"
 								fill="none"
@@ -156,6 +184,7 @@
 						</div>
 						<input
 							id="password"
+							name="password"
 							type="password"
 							bind:value={password}
 							class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3.5 pr-4 pl-11 text-gray-900 transition-all duration-200 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm"
@@ -165,7 +194,7 @@
 					</div>
 				</div>
 
-				<!-- Extra Actions (Remember me & Forgot password) -->
+				<!-- Extra Actions -->
 				<div class="flex items-center justify-between">
 					<div class="flex items-center">
 						<input
@@ -194,14 +223,19 @@
 				<div>
 					<button
 						type="submit"
-						class="flex w-full transform justify-center rounded-xl border border-transparent bg-[#ff3e00] px-4 py-3.5 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eb3900] focus:ring-2 focus:ring-[#ff3e00] focus:ring-offset-2 focus:outline-none"
+						disabled={isLoading}
+						class="flex w-full transform justify-center rounded-xl border border-transparent bg-[#ff3e00] px-4 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eb3900] focus:ring-2 focus:ring-[#ff3e00] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
 					>
-						Sign in to Dashboard
+						{#if isLoading}
+							Logging in...
+						{:else}
+							Sign in to Dashboard
+						{/if}
 					</button>
 				</div>
 			</form>
 
-			<!-- Registration Link for user registration functionality -->
+			<!-- Registration Link -->
 			<p class="mt-8 text-center text-sm font-medium text-gray-600">
 				Don't have an enterprise account?
 				<a

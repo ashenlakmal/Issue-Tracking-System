@@ -1,9 +1,9 @@
 <script lang="ts">
-	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
-
-	let { children } = $props();
+    import '../app.css';
+    import { Toaster } from 'svelte-sonner';
+    let { children } = $props();
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<Toaster position="top-right" toastOptions={{ style: 'background: #020617; border: 1px solid #ff3e00; color: #f1f5f9;' }} />
+
 {@render children()}
