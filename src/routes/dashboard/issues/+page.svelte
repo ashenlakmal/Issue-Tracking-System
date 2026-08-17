@@ -6,22 +6,22 @@
     // Ensure reactivity for the issues array
     let issues = $derived(data.issues);
     
-    // Format dates cleanly without clutter
+    // Format dates cleanly
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'No Date';
         return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 </script>
 
-<div class="flex h-screen overflow-hidden bg-[#f8fafc] font-sans text-slate-900">
+<div class="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
     
-    <!-- Premium Dark Sidebar -->
-    <aside class="z-20 flex w-[260px] flex-col bg-[#0f172a] text-slate-300 shadow-2xl transition-all duration-300 border-r border-slate-800">
+    <!-- Enterprise Sidebar -->
+    <aside class="z-20 flex w-64 flex-col border-r border-slate-800 bg-slate-950 text-slate-300 shadow-2xl transition-all duration-300">
         <div class="flex h-20 items-center px-8">
             <svg class="mr-3 h-8 w-8 text-[#ff3e00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
-            <span class="text-xl font-extrabold tracking-widest text-white uppercase mt-1">Tracker<span class="text-[#ff3e00]">Pro</span></span>
+            <span class="mt-1 text-xl font-extrabold uppercase tracking-widest text-white">Tracker<span class="text-[#ff3e00]">Pro</span></span>
         </div>
         
         <nav class="flex-1 space-y-2 overflow-y-auto px-4 py-8">
@@ -31,17 +31,17 @@
             </a>
             <!-- Active State -->
             <a href="/dashboard/issues" class="flex items-center rounded-xl bg-gradient-to-r from-[#ff3e00]/10 to-transparent px-4 py-3 text-sm font-semibold text-[#ff3e00] shadow-[inset_2px_0_0_0_#ff3e00] transition-all">
-                <svg class="mr-3.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                <svg class="mr-3.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                 All Issues
             </a>
         </nav>
     </aside>
 
     <!-- Main Workspace -->
-    <main class="flex h-screen flex-1 flex-col overflow-hidden bg-[#f8fafc]">
+    <main class="flex h-screen flex-1 flex-col overflow-hidden bg-slate-50">
         
         <!-- Minimalist Top Header -->
-        <header class="z-10 flex h-20 items-center justify-between border-b border-slate-200/60 bg-white/80 px-10 backdrop-blur-md">
+        <header class="z-10 flex h-20 items-center justify-between border-b border-slate-200 bg-white px-10">
             <h1 class="text-xl font-extrabold tracking-tight text-slate-800">Issue Directory</h1>
             
             <div class="flex items-center gap-4">
@@ -59,15 +59,14 @@
             <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <table class="w-full text-left text-sm whitespace-nowrap">
                     
-                    <!-- Table Header with more breathing room -->
-                    <thead class="border-b border-slate-200 bg-slate-50/50">
+                    <thead class="border-b border-slate-200 bg-slate-50">
                         <tr>
-                            <th scope="col" class="py-5 pl-8 pr-4 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Issue Name</th>
-                            <th scope="col" class="py-5 px-6 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Status</th>
-                            <th scope="col" class="py-5 px-6 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Priority</th>
-                            <th scope="col" class="py-5 px-6 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Assignee</th>
-                            <th scope="col" class="py-5 px-6 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Due Date</th>
-                            <th scope="col" class="py-5 pl-4 pr-8 text-right text-[11px] font-bold tracking-widest text-slate-400 uppercase">Action</th>
+                            <th scope="col" class="px-8 py-5 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Issue Name</th>
+                            <th scope="col" class="px-6 py-5 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Status</th>
+                            <th scope="col" class="px-6 py-5 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Priority</th>
+                            <th scope="col" class="px-6 py-5 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Assignee</th>
+                            <th scope="col" class="px-6 py-5 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Due Date</th>
+                            <th scope="col" class="px-8 py-5 text-right text-[11px] font-bold tracking-widest text-slate-400 uppercase">Action</th>
                         </tr>
                     </thead>
                     
@@ -80,7 +79,7 @@
                                             <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                                         </div>
                                         <h3 class="text-lg font-bold text-slate-900">No issues found</h3>
-                                        <p class="mt-2 text-sm text-slate-500 leading-relaxed">Your project is clean. When bugs or tasks arise, they will be listed here.</p>
+                                        <p class="mt-2 text-sm leading-relaxed text-slate-500">Your project is clean. When bugs or tasks arise, they will be listed here.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -88,8 +87,8 @@
                             {#each issues as issue}
                                 <tr class="group transition-colors hover:bg-slate-50/60">
                                     
-                                    <!-- Title & Icon: Improved spacing and smaller, refined icons -->
-                                    <td class="py-5 pl-8 pr-4">
+                                    <!-- Title & Icon -->
+                                    <td class="px-8 py-5">
                                         <div class="flex items-center gap-4">
                                             {#if issue.type === 'BUG'}
                                                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 ring-1 ring-inset ring-red-600/10 transition-transform group-hover:scale-105">
@@ -100,33 +99,33 @@
                                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                                                 </div>
                                             {/if}
-                                            <div class="flex flex-col gap-1 max-w-[300px]">
-                                                <p class="truncate text-[15px] font-bold text-slate-900 tracking-tight">{issue.title}</p>
+                                            <div class="flex max-w-[300px] flex-col gap-1">
+                                                <p class="truncate text-[15px] font-bold tracking-tight text-slate-900">{issue.title}</p>
                                                 <p class="truncate text-[13px] font-medium text-slate-500">{issue.description}</p>
                                             </div>
                                         </div>
                                     </td>
 
-                                    <!-- Status Badge with Premium Glowing Dot -->
+                                    <!-- Status Badge (Fixed SVG Dimensions) -->
                                     <td class="px-6 py-5">
                                         {#if issue.status === 'OPEN'}
                                             <span class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-[11px] font-bold tracking-wide text-red-700 ring-1 ring-inset ring-red-600/20">
-                                                <svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" /></svg>
+                                                <svg width="6" height="6" viewBox="0 0 6 6" class="fill-red-500"><circle cx="3" cy="3" r="3" /></svg>
                                                 OPEN
                                             </span>
                                         {:else if issue.status === 'IN_PROGRESS'}
                                             <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-bold tracking-wide text-blue-700 ring-1 ring-inset ring-blue-700/20">
-                                                <svg class="h-1.5 w-1.5 fill-blue-500" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" /></svg>
+                                                <svg width="6" height="6" viewBox="0 0 6 6" class="fill-blue-500"><circle cx="3" cy="3" r="3" /></svg>
                                                 IN PROGRESS
                                             </span>
                                         {:else if issue.status === 'RESOLVED'}
                                             <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold tracking-wide text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                                                <svg class="h-1.5 w-1.5 fill-emerald-500" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" /></svg>
+                                                <svg width="6" height="6" viewBox="0 0 6 6" class="fill-emerald-500"><circle cx="3" cy="3" r="3" /></svg>
                                                 RESOLVED
                                             </span>
                                         {:else}
                                             <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-[11px] font-bold tracking-wide text-slate-700 ring-1 ring-inset ring-slate-500/20">
-                                                <svg class="h-1.5 w-1.5 fill-slate-400" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" /></svg>
+                                                <svg width="6" height="6" viewBox="0 0 6 6" class="fill-slate-400"><circle cx="3" cy="3" r="3" /></svg>
                                                 {issue.status}
                                             </span>
                                         {/if}
@@ -177,7 +176,7 @@
                                     </td>
 
                                     <!-- Clean Action Button -->
-                                    <td class="py-5 pl-4 pr-8 text-right">
+                                    <td class="px-8 py-5 text-right">
                                         <a href={`/dashboard/issues/${issue.id}`} class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-[13px] font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:bg-slate-50 hover:text-[#ff3e00] hover:ring-[#ff3e00]/30 focus:outline-none focus:ring-2 focus:ring-[#ff3e00]">
                                             Open
                                             <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
