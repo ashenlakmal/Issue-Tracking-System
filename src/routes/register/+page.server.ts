@@ -8,10 +8,17 @@ export const actions = {
         const formData = await request.formData();
         const name = formData.get('name')?.toString();
         const email = formData.get('email')?.toString();
+        const company = formData.get('company')?.toString();
+        const jobTitle = formData.get('jobTitle')?.toString();
         const password = formData.get('password')?.toString();
+        const confirmPassword = formData.get('confirmPassword')?.toString();
 
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !confirmPassword || !company || !jobTitle) {
             return fail(400, { error: 'All fields are required.' });
+        }
+
+        if (password !== confirmPassword) {
+            return fail(400, { error: 'Passwords do not match.' });
         }
 
         if (password.length < 6) {
@@ -34,7 +41,9 @@ export const actions = {
                     name,
                     email,
                     password: hashedPassword,
-                    role: 'USER'
+                    role: 'USER',
+                    company,
+                    jobTitle
                 }
             });
 

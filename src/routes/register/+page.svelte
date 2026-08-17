@@ -4,7 +4,10 @@
 
     let name = $state('');
     let email = $state('');
+    let company = $state('');
+    let jobTitle = $state('');
     let password = $state('');
+    let confirmPassword = $state('');
     let isLoading = $state(false);
 </script>
 
@@ -48,14 +51,19 @@
     </div>
 
     <div class="relative flex w-full flex-col justify-center bg-white px-8 sm:px-16 lg:w-1/2 lg:px-24 xl:px-32">
-        <div class="mx-auto w-full max-w-md lg:mx-0">
+        <div class="mx-auto w-full max-w-lg lg:mx-0 py-12">
             <h3 class="mb-2 text-3xl font-bold tracking-tight text-gray-900">Create an account</h3>
-            <p class="mb-10 text-sm font-medium text-gray-500">Get started with your free enterprise account.</p>
+            <p class="mb-10 text-sm font-medium text-gray-500">Please fill in your professional details to continue.</p>
 
             <form 
                 method="POST" 
-                class="space-y-6"
+                class="space-y-5"
                 use:enhance={() => {
+                    if (password !== confirmPassword) {
+                        toast.error('Passwords do not match!');
+                        return ({ update }) => update();
+                    }
+                    
                     isLoading = true;
                     return async ({ result, update }) => {
                         isLoading = false;
@@ -71,22 +79,40 @@
                     };
                 }}
             >
-                <div>
-                    <label for="name" class="mb-2 block text-sm font-semibold text-gray-700">Full Name</label>
-                    <input id="name" name="name" type="text" bind:value={name} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 transition-all duration-200 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="John Doe" required />
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div>
+                        <label for="name" class="mb-2 block text-sm font-semibold text-gray-700">Full Name</label>
+                        <input id="name" name="name" type="text" bind:value={name} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 transition-all focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="John Doe" required />
+                    </div>
+                    <div>
+                        <label for="email" class="mb-2 block text-sm font-semibold text-gray-700">Email Address</label>
+                        <input id="email" name="email" type="email" bind:value={email} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 transition-all focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="name@company.com" required />
+                    </div>
                 </div>
 
-                <div>
-                    <label for="email" class="mb-2 block text-sm font-semibold text-gray-700">Email Address</label>
-                    <input id="email" name="email" type="email" bind:value={email} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 transition-all duration-200 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="name@company.com" required />
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div>
+                        <label for="company" class="mb-2 block text-sm font-semibold text-gray-700">Company</label>
+                        <input id="company" name="company" type="text" bind:value={company} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 transition-all focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="Acme Corp" required />
+                    </div>
+                    <div>
+                        <label for="jobTitle" class="mb-2 block text-sm font-semibold text-gray-700">Job Title</label>
+                        <input id="jobTitle" name="jobTitle" type="text" bind:value={jobTitle} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 transition-all focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="Software Engineer" required />
+                    </div>
                 </div>
 
-                <div>
-                    <label for="password" class="mb-2 block text-sm font-semibold text-gray-700">Password</label>
-                    <input id="password" name="password" type="password" bind:value={password} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 transition-all duration-200 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="Minimum 6 characters" minlength="6" required />
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div>
+                        <label for="password" class="mb-2 block text-sm font-semibold text-gray-700">Password</label>
+                        <input id="password" name="password" type="password" bind:value={password} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 transition-all focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="Minimum 6 characters" minlength="6" required />
+                    </div>
+                    <div>
+                        <label for="confirmPassword" class="mb-2 block text-sm font-semibold text-gray-700">Confirm Password</label>
+                        <input id="confirmPassword" name="confirmPassword" type="password" bind:value={confirmPassword} class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 transition-all focus:border-transparent focus:bg-white focus:ring-2 focus:ring-[#ff3e00] focus:outline-none sm:text-sm" placeholder="Confirm password" required />
+                    </div>
                 </div>
 
-                <button type="submit" disabled={isLoading} class="flex w-full transform justify-center rounded-xl border border-transparent bg-[#ff3e00] px-4 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eb3900] focus:ring-2 focus:ring-[#ff3e00] focus:ring-offset-2 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed">
+                <button type="submit" disabled={isLoading} class="mt-4 flex w-full transform justify-center rounded-xl border border-transparent bg-[#ff3e00] px-4 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eb3900] focus:ring-2 focus:ring-[#ff3e00] focus:ring-offset-2 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed">
                     {#if isLoading}
                         Creating Account...
                     {:else}
