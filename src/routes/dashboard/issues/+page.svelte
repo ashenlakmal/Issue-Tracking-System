@@ -3,48 +3,15 @@
     // Receive data from the server load function
     let { data } = $props();
     
-    // Fix for the Svelte 5 reactivity warning: Use $derived
+    // Ensure reactivity for the issues array
     let issues = $derived(data.issues);
     
-    // Format dates beautifully
+    // Format dates beautifully (e.g., Aug 17, 2026)
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'No due date';
         return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 </script>
-
-<!-- Reusable Svelte 5 Snippet for Status Badges -->
-{#snippet statusBadge(status: string)}
-    {#if status === 'OPEN'}
-        <span class="inline-flex items-center rounded-md bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700 ring-1 ring-inset ring-red-600/20">OPEN</span>
-    {:else if status === 'IN_PROGRESS'}
-        <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-inset ring-blue-700/20">IN PROGRESS</span>
-    {:else if status === 'RESOLVED'}
-        <span class="inline-flex items-center rounded-md bg-green-50 px-2.5 py-1 text-xs font-bold text-green-700 ring-1 ring-inset ring-green-600/20">RESOLVED</span>
-    {:else}
-        <span class="inline-flex items-center rounded-md bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-600 ring-1 ring-inset ring-slate-500/20">{status}</span>
-    {/if}
-{/snippet}
-
-<!-- Reusable Svelte 5 Snippet for Priority Formatting -->
-{#snippet priorityBadge(priority: string)}
-    {#if priority === 'HIGH'}
-        <div class="flex items-center font-bold text-red-600">
-            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-            High
-        </div>
-    {:else if priority === 'MEDIUM'}
-        <div class="flex items-center font-bold text-orange-500">
-            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" /></svg>
-            Medium
-        </div>
-    {:else}
-        <div class="flex items-center font-bold text-blue-500">
-            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
-            Low
-        </div>
-    {/if}
-{/snippet}
 
 <div class="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
     
@@ -69,7 +36,7 @@
         </nav>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Content Area -->
     <main class="flex h-screen flex-1 flex-col overflow-hidden bg-slate-50">
         
         <header class="z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-8 shadow-sm">
@@ -80,18 +47,17 @@
             <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-2xl font-bold text-slate-900">Issue Directory</h2>
                 
-                <!-- Filter Button -->
-                <button class="flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#ff3e00]">
+                <button class="flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#ff3e00]">
                     <svg class="mr-2 h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
                     Filter Issues
                 </button>
             </div>
 
-            <!-- Premium Data Table -->
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md">
+            <!-- Premium Data Table Container -->
+            <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="border-b border-slate-200 bg-slate-100 text-xs font-bold tracking-wider text-slate-500 uppercase">
+                        <thead class="border-b border-slate-200 bg-slate-50 text-xs font-bold tracking-wider text-slate-500 uppercase">
                             <tr>
                                 <th scope="col" class="px-6 py-4">Issue Details</th>
                                 <th scope="col" class="px-6 py-4">Status</th>
@@ -110,49 +76,68 @@
                                                 <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                                             </div>
                                             <p class="text-lg font-bold text-slate-900">No issues found.</p>
-                                            <p class="mt-1 text-slate-500">Go to the Dashboard to create a new issue.</p>
                                         </div>
                                     </td>
                                 </tr>
                             {:else}
                                 {#each issues as issue}
-                                    <tr class="group cursor-default transition-colors hover:bg-slate-50/80">
+                                    <tr class="transition-colors hover:bg-slate-50/80">
                                         
                                         <!-- Title & Type -->
-                                        <td class="px-6 py-5">
+                                        <td class="px-6 py-4">
                                             <div class="flex items-center">
                                                 {#if issue.type === 'BUG'}
-                                                    <span class="mr-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-200/50 bg-red-100 text-red-600 shadow-sm"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></span>
+                                                    <span class="mr-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 shadow-sm"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></span>
                                                 {:else}
-                                                    <span class="mr-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200/50 bg-blue-100 text-blue-600 shadow-sm"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg></span>
+                                                    <span class="mr-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 shadow-sm"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg></span>
                                                 {/if}
                                                 <div class="min-w-0">
-                                                    <p class="truncate text-base font-bold text-slate-900">{issue.title}</p>
-                                                    <p class="mt-1 max-w-sm truncate text-xs font-medium text-slate-500">{issue.description}</p>
+                                                    <p class="text-base font-bold text-slate-900">{issue.title}</p>
+                                                    <p class="mt-1 max-w-xs truncate text-xs font-medium text-slate-500">{issue.description}</p>
                                                 </div>
                                             </div>
                                         </td>
 
-                                        <!-- Status Badge rendered via Snippet -->
-                                        <td class="whitespace-nowrap px-6 py-5">
-                                            {@render statusBadge(issue.status)}
+                                        <!-- Status Badge (Inlined for 100% Tailwind reliability) -->
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            {#if issue.status === 'OPEN'}
+                                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">OPEN</span>
+                                            {:else if issue.status === 'IN_PROGRESS'}
+                                                <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">IN PROGRESS</span>
+                                            {:else if issue.status === 'RESOLVED'}
+                                                <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">RESOLVED</span>
+                                            {:else}
+                                                <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{issue.status}</span>
+                                            {/if}
                                         </td>
 
-                                        <!-- Priority rendered via Snippet -->
-                                        <td class="whitespace-nowrap px-6 py-5">
-                                            {@render priorityBadge(issue.priority)}
+                                        <!-- Priority (Inlined) -->
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            {#if issue.priority === 'HIGH'}
+                                                <div class="flex items-center font-bold text-red-600">
+                                                    <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg> High
+                                                </div>
+                                            {:else if issue.priority === 'MEDIUM'}
+                                                <div class="flex items-center font-bold text-orange-500">
+                                                    <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" /></svg> Medium
+                                                </div>
+                                            {:else}
+                                                <div class="flex items-center font-bold text-blue-500">
+                                                    <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg> Low
+                                                </div>
+                                            {/if}
                                         </td>
 
                                         <!-- Assignee -->
-                                        <td class="whitespace-nowrap px-6 py-5">
+                                        <td class="whitespace-nowrap px-6 py-4">
                                             {#if issue.assignee}
                                                 <div class="flex items-center">
-                                                    <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full border border-white bg-gradient-to-br from-slate-200 to-slate-300 text-sm font-bold text-slate-700 shadow-sm">
+                                                    <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-300 text-sm font-bold text-slate-700 shadow-sm border border-white">
                                                         {issue.assignee.name.charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
                                                         <p class="font-bold text-slate-800">{issue.assignee.name}</p>
-                                                        <p class="mt-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">{issue.assignee.jobTitle}</p>
+                                                        <p class="text-[10px] font-bold tracking-wider text-slate-400 uppercase">{issue.assignee.jobTitle}</p>
                                                     </div>
                                                 </div>
                                             {:else}
@@ -161,15 +146,15 @@
                                         </td>
 
                                         <!-- Due Date -->
-                                        <td class="whitespace-nowrap px-6 py-5 font-semibold text-slate-700">
+                                        <td class="whitespace-nowrap px-6 py-4 font-semibold text-slate-700">
                                             {formatDate(issue.dueDate)}
                                         </td>
 
                                         <!-- Actions -->
-                                        <td class="whitespace-nowrap px-6 py-5 text-right">
-                                            <button class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#ff3e00] shadow-sm transition-all hover:border-[#ff3e00] hover:bg-[#ff3e00] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#ff3e00]">
-                                                View / Edit
-                                            </button>
+                                        <td class="whitespace-nowrap px-6 py-4 text-right">
+                                            <a href={`/dashboard/issues/${issue.id}`} class="inline-flex items-center justify-center rounded-lg bg-[#ff3e00]/10 px-4 py-2 text-sm font-bold text-[#ff3e00] transition-colors hover:bg-[#ff3e00] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#ff3e00]">
+                                                Manage
+                                            </a>
                                         </td>
                                     </tr>
                                 {/each}
