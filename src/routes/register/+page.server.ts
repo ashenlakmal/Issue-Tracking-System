@@ -1,3 +1,4 @@
+// src/routes/register/+page.server.ts
 import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { prisma } from '$lib/prisma';
@@ -13,10 +14,19 @@ export const actions = {
         const password = formData.get('password')?.toString();
         const confirmPassword = formData.get('confirmPassword')?.toString();
 
+        // 1. Basic Validation
         if (!name || !email || !password || !confirmPassword || !company || !jobTitle) {
             return fail(400, { error: 'All fields are required.' });
         }
 
+        // 2. Enterprise Security: Domain Restriction
+        // Only allow users with a specific company email domain to register
+        const allowedDomain = '@company.com';
+        if (!email.endsWith(allowedDomain)) {
+            return fail(403, { error: `Access Denied: Only ${allowedDomain} emails are allowed to register.` });
+        }
+
+        // 3. Password Validation
         if (password !== confirmPassword) {
             return fail(400, { error: 'Passwords do not match.' });
         }
@@ -26,6 +36,7 @@ export const actions = {
         }
 
         try {
+            // 4. Check for existing users
             const existingUser = await prisma.user.findUnique({
                 where: { email }
             });
@@ -34,6 +45,7 @@ export const actions = {
                 return fail(400, { error: 'An account with this email already exists.' });
             }
 
+            // 5. Hash password and save
             const hashedPassword = await bcrypt.hash(password, 10);
 
             await prisma.user.create({
