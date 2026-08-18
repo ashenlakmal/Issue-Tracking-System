@@ -6,9 +6,7 @@ import { prisma } from '$lib/prisma';
 export const load: PageServerLoad = async ({ params, cookies }) => {
     const sessionId = cookies.get('session');
 
-    if (!sessionId) {
-        throw redirect(303, '/login');
-    }
+    if (!sessionId) throw redirect(303, '/login');
 
     try {
         const currentUser = await prisma.user.findUnique({
@@ -18,25 +16,18 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 
         if (!currentUser) throw redirect(303, '/login');
 
-        // Fetch the specific issue
         const issue = await prisma.issue.findUnique({
             where: { id: params.id },
             include: {
-                assignee: {
-                    select: { id: true, name: true, jobTitle: true }
-                },
+                assignee: { select: { id: true, name: true, jobTitle: true } },
                 comments: {
-                    include: {
-                        user: { select: { name: true, jobTitle: true } }
-                    },
+                    include: { user: { select: { name: true, jobTitle: true } } },
                     orderBy: { createdAt: 'desc' }
                 }
             }
         });
 
-        if (!issue) {
-            throw redirect(303, '/dashboard/issues');
-        }
+        if (!issue) throw redirect(303, '/dashboard/issues');
 
         const allUsers = await prisma.user.findMany({
             select: { id: true, name: true, jobTitle: true }
@@ -51,19 +42,35 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 };
 
 export const actions = {
-    updateIssue: async ({ request, params }) => {
+    updateIssue: async ({ request, params, cookies }) => {
+        const sessionId = cookies.get('session');
+        const currentUser = await prisma.user.findUnique({ where: { id: sessionId } });
+        if (!currentUser) return fail(401, { error: 'Unauthorized' });
+
         const formData = await request.formData();
         const status = formData.get('status')?.toString();
         const priority = formData.get('priority')?.toString();
         const assigneeId = formData.get('assigneeId')?.toString();
 
+        const currentIssue = await prisma.issue.findUnique({ where: { id: params.id } });
+
+        // RBAC Logic: Is Admin or Is Assignee?
+        const isAdmin = currentUser.role === 'ADMIN';
+        const isAssignee = currentIssue?.assigneeId === currentUser.id;
+
+        if (!isAdmin && !isAssignee) {
+            return fail(403, { error: 'You do not have permission to edit this issue.' });
+        }
+
         try {
             await prisma.issue.update({
                 where: { id: params.id },
                 data: {
+                    // Everyone involved can update status
                     ...(status && { status }),
-                    ...(priority && { priority }),
-                    ...(assigneeId !== undefined && { assigneeId: assigneeId || null })
+                    // ONLY ADMINS can change priority and assignee
+                    ...(isAdmin && priority && { priority }),
+                    ...(isAdmin && assigneeId !== undefined && { assigneeId: assigneeId || null })
                 }
             });
             return { success: true, message: 'Issue updated successfully.' };
@@ -72,18 +79,19 @@ export const actions = {
         }
     },
 
-    deleteIssue: async ({ params }) => {
+    deleteIssue: async ({ params, cookies }) => {
+        const sessionId = cookies.get('session');
+        const currentUser = await prisma.user.findUnique({ where: { id: sessionId } });
+
+        // RBAC Logic: STRICTLY ADMIN ONLY
+        if (currentUser?.role !== 'ADMIN') {
+            return fail(403, { error: 'Access Denied: Only Administrators can delete issues.' });
+        }
+
         try {
-
-            await prisma.comment.deleteMany({
-                where: { issueId: params.id }
-            });
-
-            await prisma.issue.delete({
-                where: { id: params.id }
-            });
+            await prisma.comment.deleteMany({ where: { issueId: params.id } });
+            await prisma.issue.delete({ where: { id: params.id } });
         } catch (error) {
-            console.error('Delete error:', error);
             return fail(500, { error: 'Failed to delete issue.' });
         }
 
@@ -95,9 +103,7 @@ export const actions = {
         const formData = await request.formData();
         const text = formData.get('text')?.toString();
 
-        if (!text || text.trim() === '') {
-            return fail(400, { error: 'Comment cannot be empty.' });
-        }
+        if (!text || text.trim() === '') return fail(400, { error: 'Comment cannot be empty.' });
 
         try {
             await prisma.comment.create({
@@ -109,7 +115,6 @@ export const actions = {
             });
             return { success: true };
         } catch (error) {
-            console.error('Comment creation error:', error);
             return fail(500, { error: 'Failed to add comment.' });
         }
     }
