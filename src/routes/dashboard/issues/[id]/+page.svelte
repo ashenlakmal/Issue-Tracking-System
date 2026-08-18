@@ -8,13 +8,14 @@
     let allUsers = $derived(data.allUsers || []);
     let currentUser = $derived(data.user);
 
-    // RBAC: Check permissions dynamically
+    // RBAC: Dynamic permissions
     let isAdmin = $derived(currentUser?.role === 'ADMIN');
     let isAssignee = $derived(issue?.assigneeId === currentUser?.id);
+    let isReporter = $derived(issue?.creatorId === currentUser?.id); // Is current user the creator?
     
-    // Admins can edit everything. Assignees can only edit Status.
-    let canEditStatus = $derived(isAdmin || isAssignee);
-    let canEditProperties = $derived(isAdmin);
+    // Admins & Reporters can edit properties. Assignees can only edit Status.
+    let canEditStatus = $derived(isAdmin || isAssignee || isReporter);
+    let canEditProperties = $derived(isAdmin || isReporter);
 
     const formatDate = (dateString: string | null | Date) => {
         if (!dateString) return 'No Date';
@@ -31,7 +32,7 @@
     <aside class="sidebar">
         <div class="brand">
             <svg class="brand-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
             <span class="brand-text">Tracker<span>Pro</span></span>
         </div>
@@ -63,9 +64,11 @@
                 <span class="separator">/</span>
                 <span class="current">Issue Details</span>
             </div>
-            <!-- Display User Role Badge -->
             <div class="role-badge">
                 <span class="badge {isAdmin ? 'admin' : 'user'}">{currentUser?.role} MODE</span>
+                {#if isReporter}
+                    <span class="badge reporter">REPORTER</span>
+                {/if}
             </div>
         </header>
 
@@ -74,7 +77,6 @@
                 
                 <!-- Left Column: Details & Comments -->
                 <div class="main-content">
-                    
                     <div class="issue-header-card">
                         <div class="issue-title-area">
                             <div class={`type-badge ${issue?.type?.toLowerCase() || 'task'}`}>
@@ -87,7 +89,6 @@
                             <h1 class="issue-title">{issue?.title}</h1>
                             <p class="issue-meta">Reported on {formatDate(issue?.createdAt)}</p>
                         </div>
-                        
                         <div class="issue-description">
                             <h3>Description</h3>
                             <p>{issue?.description}</p>
@@ -97,33 +98,11 @@
                     <!-- Comments Section -->
                     <div class="comments-section">
                         <h3>Activity & Comments</h3>
-                        
-                        <form 
-                            action="?/addComment" 
-                            method="POST" 
-                            class="comment-form"
-                            use:enhance={() => {
-                                isSubmittingComment = true;
-                                return async ({ result, update }) => {
-                                    isSubmittingComment = false;
-                                    if (result.type === 'success') {
-                                        toast.success('Comment added!');
-                                    } else {
-                                        toast.error('Failed to add comment.');
-                                    }
-                                    update({ reset: true });
-                                };
-                            }}
-                        >
+                        <form action="?/addComment" method="POST" class="comment-form" use:enhance={() => { isSubmittingComment = true; return async ({ result, update }) => { isSubmittingComment = false; if (result.type === 'success') toast.success('Comment added!'); else toast.error('Failed to add comment.'); update({ reset: true }); }; }}>
                             <label for="comment-text" class="visually-hidden">Add a comment</label>
                             <textarea id="comment-text" name="text" rows="3" placeholder="Add a comment..." required></textarea>
-                            <div class="form-actions">
-                                <button type="submit" class="btn-primary" disabled={isSubmittingComment}>
-                                    {isSubmittingComment ? 'Posting...' : 'Comment'}
-                                </button>
-                            </div>
+                            <div class="form-actions"><button type="submit" class="btn-primary" disabled={isSubmittingComment}>{isSubmittingComment ? 'Posting...' : 'Comment'}</button></div>
                         </form>
-
                         <div class="comments-list">
                             {#if !issue?.comments || issue.comments.length === 0}
                                 <p class="no-comments">No comments yet. Be the first to start the conversation.</p>
@@ -132,10 +111,7 @@
                                     <div class="comment-card">
                                         <div class="comment-avatar">{comment.user.name.charAt(0)}</div>
                                         <div class="comment-content">
-                                            <div class="comment-header">
-                                                <span class="author-name">{comment.user.name}</span>
-                                                <span class="comment-date">{formatDate(comment.createdAt)}</span>
-                                            </div>
+                                            <div class="comment-header"><span class="author-name">{comment.user.name}</span><span class="comment-date">{formatDate(comment.createdAt)}</span></div>
                                             <p class="comment-text">{comment.text}</p>
                                         </div>
                                     </div>
@@ -149,34 +125,19 @@
                 <div class="side-panel">
                     <div class="properties-card">
                         <h3>Properties</h3>
-                        
-                        <form 
-                            action="?/updateIssue" 
-                            method="POST"
-                            use:enhance={() => {
-                                return async ({ result, update }) => {
-                                    if (result.type === 'success') toast.success('Issue updated!');
-                                    else if (result.type === 'failure') toast.error(result.data?.error || 'Failed to update');
-                                    update({ reset: false });
-                                };
-                            }}
-                        >
+                        <form action="?/updateIssue" method="POST" use:enhance={() => { return async ({ result, update }) => { if (result.type === 'success') toast.success('Issue updated!'); else if (result.type === 'failure') toast.error(result.data?.error || 'Failed to update'); update({ reset: false }); }; }}>
+                            
                             <div class="property-group">
                                 <label for="status-select">Status</label>
                                 <select id="status-select" name="status" value={issue?.status} onchange={(e: any) => e.target.form.requestSubmit()} disabled={!canEditStatus}>
-                                    <option value="OPEN">Open</option>
-                                    <option value="IN_PROGRESS">In Progress</option>
-                                    <option value="RESOLVED">Resolved</option>
-                                    <option value="CLOSED">Closed</option>
+                                    <option value="OPEN">Open</option><option value="IN_PROGRESS">In Progress</option><option value="RESOLVED">Resolved</option><option value="CLOSED">Closed</option>
                                 </select>
                             </div>
 
                             <div class="property-group">
                                 <label for="priority-select">Priority</label>
                                 <select id="priority-select" name="priority" value={issue?.priority} onchange={(e: any) => e.target.form.requestSubmit()} disabled={!canEditProperties}>
-                                    <option value="HIGH">High</option>
-                                    <option value="MEDIUM">Medium</option>
-                                    <option value="LOW">Low</option>
+                                    <option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option>
                                 </select>
                             </div>
 
@@ -191,65 +152,39 @@
                             </div>
 
                             {#if !canEditProperties}
-                                <p class="permission-note">Only Admins can modify Priority and Assignee.</p>
+                                <p class="permission-note">Only Admins and the Reporter can modify Priority and Assignee.</p>
                             {/if}
                         </form>
                     </div>
 
-                    <!-- Only Admins can see the Delete section -->
+                    <!-- Only Admins see Delete -->
                     {#if isAdmin}
                         <div class="danger-card">
                             <h3>Danger Zone</h3>
                             <p>Once you delete an issue, there is no going back. Please be certain.</p>
-                            <button type="button" class="btn-danger-trigger" onclick={() => showDeleteModal = true}>
-                                Delete Issue
-                            </button>
+                            <button type="button" class="btn-danger-trigger" onclick={() => showDeleteModal = true}>Delete Issue</button>
                         </div>
                     {/if}
                 </div>
-
             </div>
         </div>
     </main>
 
-    <!-- Custom Premium Delete Confirmation Modal -->
+    <!-- Delete Modal -->
     {#if showDeleteModal && isAdmin}
         <div class="modal-backdrop">
             <div class="modal-card">
                 <div class="modal-content">
                     <div class="modal-icon-wrapper">
-                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                     </div>
                     <h3 class="modal-title">Delete Issue</h3>
-                    <p class="modal-desc">
-                        Are you sure you want to delete the issue <strong>"{issue?.title}"</strong>? All of its data and comments will be permanently removed. This action cannot be undone.
-                    </p>
+                    <p class="modal-desc">Are you sure you want to delete the issue <strong>"{issue?.title}"</strong>? All of its data and comments will be permanently removed.</p>
                 </div>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick={() => showDeleteModal = false} disabled={isDeleting}>Cancel</button>
-                    
-                    <form 
-                        action="?/deleteIssue" 
-                        method="POST"
-                        use:enhance={() => {
-                            isDeleting = true;
-                            return async ({ result, update }) => {
-                                if (result.type === 'redirect') {
-                                    toast.success('Issue deleted successfully!');
-                                    showDeleteModal = false;
-                                } else {
-                                    toast.error('Failed to delete issue.');
-                                    isDeleting = false;
-                                }
-                                update();
-                            };
-                        }}
-                    >
-                        <button type="submit" class="btn-confirm-delete" disabled={isDeleting}>
-                            {isDeleting ? 'Deleting...' : 'Yes, delete issue'}
-                        </button>
+                    <form action="?/deleteIssue" method="POST" use:enhance={() => { isDeleting = true; return async ({ result, update }) => { if (result.type === 'redirect') { toast.success('Issue deleted!'); showDeleteModal = false; } else { toast.error('Failed to delete.'); isDeleting = false; } update(); }; }}>
+                        <button type="submit" class="btn-confirm-delete" disabled={isDeleting}>{isDeleting ? 'Deleting...' : 'Yes, delete issue'}</button>
                     </form>
                 </div>
             </div>
@@ -258,16 +193,15 @@
 </div>
 
 <style>
-    /* Add this to your existing styles */
     .permission-note { margin-top: 16px; font-size: 11px; font-weight: 600; color: #94a3b8; font-style: italic; text-align: center; }
     .property-group select:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; border-color: #e2e8f0; }
-    
+    .role-badge { display: flex; gap: 8px; align-items: center; }
     .role-badge .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
     .role-badge .badge.admin { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
     .role-badge .badge.user { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    .role-badge .badge.reporter { background-color: #fef3c7; color: #e11d48; border: 1px solid #fecdd3; } /* Special badge for Reporter */
 
-    /* The rest of the CSS is identical to the previous code */
-    /* Reset & Base Layout - Matching the Pure CSS Theme */
+    /* The rest is identical to the previous Pure CSS theme */
     .app-layout { display: flex; height: 100vh; width: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; }
     *, *::before, *::after { box-sizing: border-box; }
     .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
