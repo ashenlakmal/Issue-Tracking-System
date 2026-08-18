@@ -13,7 +13,6 @@
         return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     };
 
-    // State variables
     let isSubmittingComment = $state(false);
     let showDeleteModal = $state(false);
     let isDeleting = $state(false);
@@ -213,14 +212,21 @@
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick={() => showDeleteModal = false} disabled={isDeleting}>Cancel</button>
                     
+                    <!-- FIXED: Added 'update()' to the use:enhance callback -->
                     <form 
                         action="?/deleteIssue" 
                         method="POST"
                         use:enhance={() => {
                             isDeleting = true;
-                            return async () => {
-                                toast.success('Issue deleted successfully!');
-                                // The server redirects automatically after this
+                            return async ({ result, update }) => {
+                                if (result.type === 'redirect') {
+                                    toast.success('Issue deleted successfully!');
+                                    showDeleteModal = false;
+                                } else {
+                                    toast.error('Failed to delete issue.');
+                                    isDeleting = false;
+                                }
+                                update(); // IMPORTANT: This triggers the server's redirect!
                             };
                         }}
                     >
