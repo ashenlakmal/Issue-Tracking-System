@@ -21,7 +21,7 @@
     <aside class="sidebar">
         <div class="brand">
             <svg class="brand-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
             <span class="brand-text">Tracker<span>Pro</span></span>
         </div>
@@ -63,20 +63,20 @@
                     
                     <div class="issue-header-card">
                         <div class="issue-title-area">
-                            <div class={`type-badge ${issue.type.toLowerCase()}`}>
-                                {#if issue.type === 'BUG'}
+                            <div class={`type-badge ${issue?.type?.toLowerCase() || 'task'}`}>
+                                {#if issue?.type === 'BUG'}
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Bug
                                 {:else}
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> Task
                                 {/if}
                             </div>
-                            <h1 class="issue-title">{issue.title}</h1>
-                            <p class="issue-meta">Reported on {formatDate(issue.createdAt)}</p>
+                            <h1 class="issue-title">{issue?.title}</h1>
+                            <p class="issue-meta">Reported on {formatDate(issue?.createdAt)}</p>
                         </div>
                         
                         <div class="issue-description">
                             <h3>Description</h3>
-                            <p>{issue.description}</p>
+                            <p>{issue?.description}</p>
                         </div>
                     </div>
 
@@ -84,7 +84,6 @@
                     <div class="comments-section">
                         <h3>Activity & Comments</h3>
                         
-                        <!-- Add Comment Form -->
                         <form 
                             action="?/addComment" 
                             method="POST" 
@@ -110,9 +109,8 @@
                             </div>
                         </form>
 
-                        <!-- Comments List -->
                         <div class="comments-list">
-                            {#if issue.comments.length === 0}
+                            {#if !issue?.comments || issue.comments.length === 0}
                                 <p class="no-comments">No comments yet. Be the first to start the conversation.</p>
                             {:else}
                                 {#each issue.comments as comment}
@@ -147,9 +145,10 @@
                                 };
                             }}
                         >
+                            <!-- Note: Changed 'e' to 'any' to prevent TypeScript from crashing the compiler here -->
                             <div class="property-group">
                                 <label>Status</label>
-                                <select name="status" value={issue.status} onchange={(e) => e.target.form.requestSubmit()}>
+                                <select name="status" value={issue?.status} onchange={(e: any) => e.target.form.requestSubmit()}>
                                     <option value="OPEN">Open</option>
                                     <option value="IN_PROGRESS">In Progress</option>
                                     <option value="RESOLVED">Resolved</option>
@@ -159,7 +158,7 @@
 
                             <div class="property-group">
                                 <label>Priority</label>
-                                <select name="priority" value={issue.priority} onchange={(e) => e.target.form.requestSubmit()}>
+                                <select name="priority" value={issue?.priority} onchange={(e: any) => e.target.form.requestSubmit()}>
                                     <option value="HIGH">High</option>
                                     <option value="MEDIUM">Medium</option>
                                     <option value="LOW">Low</option>
@@ -168,7 +167,7 @@
 
                             <div class="property-group">
                                 <label>Assignee</label>
-                                <select name="assigneeId" value={issue.assigneeId || ''} onchange={(e) => e.target.form.requestSubmit()}>
+                                <select name="assigneeId" value={issue?.assigneeId || ''} onchange={(e: any) => e.target.form.requestSubmit()}>
                                     <option value="">Unassigned</option>
                                     {#each allUsers as appUser}
                                         <option value={appUser.id}>{appUser.name}</option>
@@ -178,7 +177,6 @@
                         </form>
                     </div>
 
-                    <!-- Danger Zone (Delete) -->
                     <div class="danger-card">
                         <h3>Danger Zone</h3>
                         <p>Once you delete an issue, there is no going back. Please be certain.</p>
@@ -192,7 +190,8 @@
                                 };
                             }}
                         >
-                            <button type="submit" class="btn-danger" onclick={(e) => !confirm('Are you sure you want to delete this issue?') && e.preventDefault()}>
+                            <!-- Fixed confirm dialogue typings -->
+                            <button type="submit" class="btn-danger" onclick={(e: any) => !confirm('Are you sure you want to delete this issue?') && e.preventDefault()}>
                                 Delete Issue
                             </button>
                         </form>
@@ -209,7 +208,7 @@
     .app-layout { display: flex; height: 100vh; width: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; }
     *, *::before, *::after { box-sizing: border-box; }
 
-    /* Sidebar (Identical to previous) */
+    /* Sidebar */
     .sidebar { width: 260px; background-color: #020617; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; z-index: 20; }
     .brand { height: 64px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid #1e293b; }
     .brand-icon { width: 32px; height: 32px; color: #ff3e00; margin-right: 8px; }
@@ -279,15 +278,9 @@
     .property-group select:hover { border-color: #94a3b8; }
     .property-group select:focus { border-color: #ff3e00; box-shadow: 0 0 0 2px rgba(255, 62, 0, 0.1); }
 
-    .danger-card { background: #fff1f2; border-radius: 16px; border: 1px solid #fecdd3; padding: 24px; }
+    .danger-card { background: #fff1f2; border-radius: 16px; border: 1px solid #fecdd3; padding: 24px; margin-top: 24px;}
     .danger-card h3 { margin: 0 0 8px 0; font-size: 16px; font-weight: 800; color: #be123c; }
     .danger-card p { margin: 0 0 20px 0; font-size: 13px; color: #9f1239; line-height: 1.5; }
     .btn-danger { width: 100%; background: white; border: 1px solid #fda4af; color: #e11d48; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .btn-danger:hover { background: #e11d48; color: white; border-color: #e11d48; }
-
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-        .split-layout { flex-direction: column; }
-        .side-panel { width: 100%; }
-    }
 </style>

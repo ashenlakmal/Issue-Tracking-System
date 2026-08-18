@@ -191,12 +191,13 @@
                                         <span class="date-text">{formatDate(issue.dueDate)}</span>
                                     </td>
 
-                                    <td class="text-right pr-wide">
-                                        <a href="/dashboard/issues/{issue.id}" class="btn-open">
-                                            Open
-                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                                        </a>
-                                    </td>
+                                    <!-- Action Button -->
+                                <td class="text-right pr-wide">
+                                    <a href="/dashboard/issues/{issue.id}" data-sveltekit-reload class="btn-open">
+                                        Open
+                                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                    </a>
+                                </td>
                                 </tr>
                             {/each}
                         {/if}
