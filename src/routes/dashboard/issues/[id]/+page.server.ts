@@ -5,7 +5,6 @@ import { prisma } from '$lib/prisma';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
     const sessionId = cookies.get('session');
-
     if (!sessionId) throw redirect(303, '/login');
 
     try {
@@ -13,30 +12,21 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
             where: { id: sessionId },
             select: { id: true, name: true, role: true }
         });
-
         if (!currentUser) throw redirect(303, '/login');
 
         const issue = await prisma.issue.findUnique({
             where: { id: params.id },
             include: {
                 assignee: { select: { id: true, name: true, jobTitle: true } },
-                comments: {
-                    include: { user: { select: { name: true, jobTitle: true } } },
-                    orderBy: { createdAt: 'desc' }
-                }
+                comments: { include: { user: { select: { name: true, jobTitle: true } } }, orderBy: { createdAt: 'desc' } }
             }
         });
 
         if (!issue) throw redirect(303, '/dashboard/issues');
 
-        const allUsers = await prisma.user.findMany({
-            select: { id: true, name: true, jobTitle: true }
-        });
-
+        const allUsers = await prisma.user.findMany({ select: { id: true, name: true, jobTitle: true } });
         return { user: currentUser, issue, allUsers };
-
     } catch (error) {
-        console.error('Failed to load issue details:', error);
         throw redirect(303, '/dashboard/issues');
     }
 };
@@ -54,11 +44,11 @@ export const actions = {
 
         const currentIssue = await prisma.issue.findUnique({ where: { id: params.id } });
 
-        // RBAC Logic: Is Admin or Is Assignee?
         const isAdmin = currentUser.role === 'ADMIN';
         const isAssignee = currentIssue?.assigneeId === currentUser.id;
+        const isReporter = currentIssue?.creatorId === currentUser.id; // Check if user is the creator
 
-        if (!isAdmin && !isAssignee) {
+        if (!isAdmin && !isAssignee && !isReporter) {
             return fail(403, { error: 'You do not have permission to edit this issue.' });
         }
 
@@ -66,11 +56,10 @@ export const actions = {
             await prisma.issue.update({
                 where: { id: params.id },
                 data: {
-                    // Everyone involved can update status
                     ...(status && { status }),
-                    // ONLY ADMINS can change priority and assignee
-                    ...(isAdmin && priority && { priority }),
-                    ...(isAdmin && assigneeId !== undefined && { assigneeId: assigneeId || null })
+                    // Admins AND Reporters can change priority and assignee
+                    ...((isAdmin || isReporter) && priority && { priority }),
+                    ...((isAdmin || isReporter) && assigneeId !== undefined && { assigneeId: assigneeId || null })
                 }
             });
             return { success: true, message: 'Issue updated successfully.' };
@@ -83,10 +72,7 @@ export const actions = {
         const sessionId = cookies.get('session');
         const currentUser = await prisma.user.findUnique({ where: { id: sessionId } });
 
-        // RBAC Logic: STRICTLY ADMIN ONLY
-        if (currentUser?.role !== 'ADMIN') {
-            return fail(403, { error: 'Access Denied: Only Administrators can delete issues.' });
-        }
+        if (currentUser?.role !== 'ADMIN') return fail(403, { error: 'Access Denied: Only Administrators can delete issues.' });
 
         try {
             await prisma.comment.deleteMany({ where: { issueId: params.id } });
@@ -94,7 +80,6 @@ export const actions = {
         } catch (error) {
             return fail(500, { error: 'Failed to delete issue.' });
         }
-
         throw redirect(303, '/dashboard/issues');
     },
 
@@ -107,11 +92,7 @@ export const actions = {
 
         try {
             await prisma.comment.create({
-                data: {
-                    text,
-                    issue: { connect: { id: params.id } },
-                    user: { connect: { id: sessionId as string } }
-                }
+                data: { text, issue: { connect: { id: params.id } }, user: { connect: { id: sessionId as string } } }
             });
             return { success: true };
         } catch (error) {
