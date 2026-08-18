@@ -4,8 +4,6 @@
     import { toast } from 'svelte-sonner';
 
     let { data } = $props();
-    
-    // FIXED: Added $derived to all variables that depend on 'data' to remove Svelte warnings
     let issue = $derived(data.issue);
     let allUsers = $derived(data.allUsers || []);
     let currentUser = $derived(data.user);
@@ -15,7 +13,10 @@
         return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     };
 
+    // State variables
     let isSubmittingComment = $state(false);
+    let showDeleteModal = $state(false);
+    let isDeleting = $state(false);
 </script>
 
 <div class="app-layout">
@@ -179,29 +180,58 @@
                         </form>
                     </div>
 
+                    <!-- Enhanced Danger Zone -->
                     <div class="danger-card">
                         <h3>Danger Zone</h3>
                         <p>Once you delete an issue, there is no going back. Please be certain.</p>
-                        <form 
-                            action="?/deleteIssue" 
-                            method="POST"
-                            use:enhance={() => {
-                                return async ({ update }) => {
-                                    toast.success('Issue deleted!');
-                                    update();
-                                };
-                            }}
-                        >
-                            <button type="submit" class="btn-danger" onclick={(e: any) => !confirm('Are you sure you want to delete this issue?') && e.preventDefault()}>
-                                Delete Issue
-                            </button>
-                        </form>
+                        <!-- Opens the Premium Modal -->
+                        <button type="button" class="btn-danger-trigger" onclick={() => showDeleteModal = true}>
+                            Delete Issue
+                        </button>
                     </div>
                 </div>
 
             </div>
         </div>
     </main>
+
+    <!-- Custom Premium Delete Confirmation Modal -->
+    {#if showDeleteModal}
+        <div class="modal-backdrop">
+            <div class="modal-card">
+                <div class="modal-content">
+                    <div class="modal-icon-wrapper">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 class="modal-title">Delete Issue</h3>
+                    <p class="modal-desc">
+                        Are you sure you want to delete the issue <strong>"{issue?.title}"</strong>? All of its data and comments will be permanently removed. This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick={() => showDeleteModal = false} disabled={isDeleting}>Cancel</button>
+                    
+                    <form 
+                        action="?/deleteIssue" 
+                        method="POST"
+                        use:enhance={() => {
+                            isDeleting = true;
+                            return async () => {
+                                toast.success('Issue deleted successfully!');
+                                // The server redirects automatically after this
+                            };
+                        }}
+                    >
+                        <button type="submit" class="btn-confirm-delete" disabled={isDeleting}>
+                            {isDeleting ? 'Deleting...' : 'Yes, delete issue'}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {/if}
 </div>
 
 <style>
@@ -284,12 +314,120 @@
     .danger-card { background: #fff1f2; border-radius: 16px; border: 1px solid #fecdd3; padding: 24px; margin-top: 24px;}
     .danger-card h3 { margin: 0 0 8px 0; font-size: 16px; font-weight: 800; color: #be123c; }
     .danger-card p { margin: 0 0 20px 0; font-size: 13px; color: #9f1239; line-height: 1.5; }
-    .btn-danger { width: 100%; background: white; border: 1px solid #fda4af; color: #e11d48; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-danger:hover { background: #e11d48; color: white; border-color: #e11d48; }
+    
+    .btn-danger-trigger { width: 100%; background: white; border: 1px solid #fda4af; color: #e11d48; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-danger-trigger:hover { background: #e11d48; color: white; border-color: #e11d48; }
 
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-        .split-layout { flex-direction: column; }
-        .side-panel { width: 100%; }
+    /* -------------------------------------
+       PREMIUM CUSTOM DELETE MODAL 
+       ------------------------------------- */
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    .modal-backdrop {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 24px;
+        animation: modalFadeIn 0.2s ease-out;
+    }
+
+    .modal-card {
+        background: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 440px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+    }
+
+    .modal-content {
+        padding: 32px 32px 24px;
+        text-align: center;
+    }
+
+    .modal-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #fee2e2;
+        color: #dc2626;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .modal-icon-wrapper svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .modal-title {
+        margin: 0 0 12px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .modal-desc {
+        margin: 0;
+        font-size: 15px;
+        color: #475569;
+        line-height: 1.6;
+    }
+
+    .modal-actions {
+        background: #f8fafc;
+        padding: 20px 32px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-cancel {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #475569;
+        background: white;
+        border: 1px solid #cbd5e1;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover:not(:disabled) {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .btn-confirm-delete {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+        background: #e11d48;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-confirm-delete:hover:not(:disabled) {
+        background: #be123c;
+    }
+
+    .btn-cancel:disabled, .btn-confirm-delete:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 </style>
