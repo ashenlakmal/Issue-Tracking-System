@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
         });
         if (!currentUser) throw redirect(303, '/login');
 
-        const issue = await prisma.issue.findUnique({
+        let issue = await prisma.issue.findUnique({
             where: { id: params.id },
             include: {
                 assignee: { select: { id: true, name: true, jobTitle: true } },
@@ -23,6 +23,15 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
         });
 
         if (!issue) throw redirect(303, '/dashboard/issues');
+
+        if (!issue.creatorId) {
+            await prisma.issue.update({
+                where: { id: issue.id },
+                data: { creatorId: currentUser.id }
+            });
+            issue.creatorId = currentUser.id;
+        }
+        // ----------------------------------------------
 
         const allUsers = await prisma.user.findMany({ select: { id: true, name: true, jobTitle: true } });
         return { user: currentUser, issue, allUsers };
@@ -75,7 +84,6 @@ export const actions = {
         const isAdmin = currentUser?.role === 'ADMIN';
         const isReporter = currentIssue?.creatorId === currentUser?.id;
 
-        // FIXED: Now both ADMINs and REPORTERS (creators) can delete the issue
         if (!isAdmin && !isReporter) {
             return fail(403, { error: 'Access Denied: Only Administrators or the Reporter can delete this issue.' });
         }
