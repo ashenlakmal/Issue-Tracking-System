@@ -204,3 +204,90 @@
     </main>
 </div>
 
+<style>
+    /* Reset & Base Layout - Matching the Pure CSS Theme */
+    .app-layout { display: flex; height: 100vh; width: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /* Sidebar (Identical to previous) */
+    .sidebar { width: 260px; background-color: #020617; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; z-index: 20; }
+    .brand { height: 64px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid #1e293b; }
+    .brand-icon { width: 32px; height: 32px; color: #ff3e00; margin-right: 8px; }
+    .brand-text { font-size: 20px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.05em; }
+    .brand-text span { color: #ff3e00; }
+    .nav-menu { flex: 1; padding: 24px 12px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+    .nav-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #94a3b8; text-decoration: none; transition: all 0.2s ease; }
+    .nav-item:hover { background-color: #0f172a; color: white; }
+    .nav-icon { width: 20px; height: 20px; margin-right: 12px; }
+    .nav-item.active { background-color: rgba(255, 62, 0, 0.1); color: #ff3e00; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid #1e293b; }
+    .btn-logout { width: 100%; display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #94a3b8; background: transparent; border: none; cursor: pointer; transition: all 0.2s ease; }
+    .btn-logout:hover { background-color: #0f172a; color: #f87171; }
+
+    /* Main Area & Header */
+    .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: #f8fafc; }
+    .top-header { height: 64px; display: flex; align-items: center; padding: 0 32px; background-color: white; border-bottom: 1px solid #e2e8f0; z-index: 10; }
+    .breadcrumb { display: flex; align-items: center; font-size: 14px; font-weight: 600; }
+    .breadcrumb a { color: #64748b; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: #0f172a; }
+    .breadcrumb .separator { color: #cbd5e1; margin: 0 12px; }
+    .breadcrumb .current { color: #0f172a; }
+
+    /* Layout Split */
+    .content-scroll { flex: 1; overflow-y: auto; padding: 32px; }
+    .split-layout { display: flex; gap: 24px; max-width: 1200px; margin: 0 auto; align-items: flex-start; }
+    .main-content { flex: 1; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+    .side-panel { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
+
+    /* Left Column Elements */
+    .issue-header-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .type-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
+    .type-badge svg { width: 14px; height: 14px; }
+    .type-badge.bug { background: #fef2f2; color: #dc2626; }
+    .type-badge.task { background: #eff6ff; color: #2563eb; }
+    .issue-title { margin: 0 0 8px 0; font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1.3; }
+    .issue-meta { margin: 0 0 24px 0; font-size: 13px; color: #64748b; }
+    .issue-description h3 { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; padding-top: 24px; border-top: 1px solid #f1f5f9; }
+    .issue-description p { margin: 0; font-size: 15px; color: #334155; line-height: 1.6; white-space: pre-wrap; }
+
+    .comments-section { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .comments-section h3 { margin: 0 0 24px 0; font-size: 18px; font-weight: 800; color: #0f172a; }
+    .comment-form textarea { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; resize: vertical; outline: none; transition: all 0.2s; background: #f8fafc; }
+    .comment-form textarea:focus { border-color: #ff3e00; background: white; box-shadow: 0 0 0 4px rgba(255, 62, 0, 0.1); }
+    .form-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+    .btn-primary { background: #ff3e00; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(255, 62, 0, 0.2); }
+    .btn-primary:hover:not(:disabled) { background: #eb3900; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    .comments-list { margin-top: 32px; display: flex; flex-direction: column; gap: 20px; }
+    .no-comments { text-align: center; color: #94a3b8; font-size: 14px; font-style: italic; padding: 20px 0; }
+    .comment-card { display: flex; gap: 16px; }
+    .comment-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #475569; flex-shrink: 0; }
+    .comment-content { flex: 1; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 16px; }
+    .comment-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+    .author-name { font-weight: 700; font-size: 14px; color: #1e293b; }
+    .comment-date { font-size: 12px; color: #94a3b8; }
+    .comment-text { margin: 0; font-size: 14px; color: #334155; line-height: 1.5; white-space: pre-wrap; }
+
+    /* Right Column Elements */
+    .properties-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .properties-card h3 { margin: 0 0 20px 0; font-size: 16px; font-weight: 800; color: #0f172a; }
+    .property-group { margin-bottom: 16px; }
+    .property-group:last-child { margin-bottom: 0; }
+    .property-group label { display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+    .property-group select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; font-weight: 600; color: #0f172a; outline: none; background: #f8fafc; cursor: pointer; transition: all 0.2s; }
+    .property-group select:hover { border-color: #94a3b8; }
+    .property-group select:focus { border-color: #ff3e00; box-shadow: 0 0 0 2px rgba(255, 62, 0, 0.1); }
+
+    .danger-card { background: #fff1f2; border-radius: 16px; border: 1px solid #fecdd3; padding: 24px; }
+    .danger-card h3 { margin: 0 0 8px 0; font-size: 16px; font-weight: 800; color: #be123c; }
+    .danger-card p { margin: 0 0 20px 0; font-size: 13px; color: #9f1239; line-height: 1.5; }
+    .btn-danger { width: 100%; background: white; border: 1px solid #fda4af; color: #e11d48; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-danger:hover { background: #e11d48; color: white; border-color: #e11d48; }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .split-layout { flex-direction: column; }
+        .side-panel { width: 100%; }
+    }
+</style>
