@@ -35,6 +35,7 @@ model Issue {
   assignee    User?     @relation(fields: [assigneeId], references: [id])
   
   comments    Comment[]
+  creatorId  String?  @db.ObjectId
 }
 
 // 3. Comment Model: Allows users to discuss specific issues
