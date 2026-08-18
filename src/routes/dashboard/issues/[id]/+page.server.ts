@@ -46,7 +46,7 @@ export const actions = {
 
         const isAdmin = currentUser.role === 'ADMIN';
         const isAssignee = currentIssue?.assigneeId === currentUser.id;
-        const isReporter = currentIssue?.creatorId === currentUser.id; // Check if user is the creator
+        const isReporter = currentIssue?.creatorId === currentUser.id;
 
         if (!isAdmin && !isAssignee && !isReporter) {
             return fail(403, { error: 'You do not have permission to edit this issue.' });
@@ -57,7 +57,6 @@ export const actions = {
                 where: { id: params.id },
                 data: {
                     ...(status && { status }),
-                    // Admins AND Reporters can change priority and assignee
                     ...((isAdmin || isReporter) && priority && { priority }),
                     ...((isAdmin || isReporter) && assigneeId !== undefined && { assigneeId: assigneeId || null })
                 }
@@ -71,8 +70,15 @@ export const actions = {
     deleteIssue: async ({ params, cookies }) => {
         const sessionId = cookies.get('session');
         const currentUser = await prisma.user.findUnique({ where: { id: sessionId } });
+        const currentIssue = await prisma.issue.findUnique({ where: { id: params.id } });
 
-        if (currentUser?.role !== 'ADMIN') return fail(403, { error: 'Access Denied: Only Administrators can delete issues.' });
+        const isAdmin = currentUser?.role === 'ADMIN';
+        const isReporter = currentIssue?.creatorId === currentUser?.id;
+
+        // FIXED: Now both ADMINs and REPORTERS (creators) can delete the issue
+        if (!isAdmin && !isReporter) {
+            return fail(403, { error: 'Access Denied: Only Administrators or the Reporter can delete this issue.' });
+        }
 
         try {
             await prisma.comment.deleteMany({ where: { issueId: params.id } });
