@@ -101,7 +101,8 @@
                                 };
                             }}
                         >
-                            <textarea name="text" rows="3" placeholder="Add a comment..." required></textarea>
+                            <label for="comment-text" class="visually-hidden">Add a comment</label>
+                            <textarea id="comment-text" name="text" rows="3" placeholder="Add a comment..." required></textarea>
                             <div class="form-actions">
                                 <button type="submit" class="btn-primary" disabled={isSubmittingComment}>
                                     {isSubmittingComment ? 'Posting...' : 'Comment'}
@@ -115,10 +116,11 @@
                             {:else}
                                 {#each issue.comments as comment}
                                     <div class="comment-card">
-                                        <div class="comment-avatar">{comment.author.name.charAt(0)}</div>
+                                        <!-- FIXED: Changed 'author' to 'user' -->
+                                        <div class="comment-avatar">{comment.user.name.charAt(0)}</div>
                                         <div class="comment-content">
                                             <div class="comment-header">
-                                                <span class="author-name">{comment.author.name}</span>
+                                                <span class="author-name">{comment.user.name}</span>
                                                 <span class="comment-date">{formatDate(comment.createdAt)}</span>
                                             </div>
                                             <p class="comment-text">{comment.text}</p>
@@ -145,10 +147,10 @@
                                 };
                             }}
                         >
-                            <!-- Note: Changed 'e' to 'any' to prevent TypeScript from crashing the compiler here -->
+                            <!-- FIXED: Added 'id' to selects and 'for' to labels to fix Svelte Warning -->
                             <div class="property-group">
-                                <label>Status</label>
-                                <select name="status" value={issue?.status} onchange={(e: any) => e.target.form.requestSubmit()}>
+                                <label for="status-select">Status</label>
+                                <select id="status-select" name="status" value={issue?.status} onchange={(e: any) => e.target.form.requestSubmit()}>
                                     <option value="OPEN">Open</option>
                                     <option value="IN_PROGRESS">In Progress</option>
                                     <option value="RESOLVED">Resolved</option>
@@ -157,8 +159,8 @@
                             </div>
 
                             <div class="property-group">
-                                <label>Priority</label>
-                                <select name="priority" value={issue?.priority} onchange={(e: any) => e.target.form.requestSubmit()}>
+                                <label for="priority-select">Priority</label>
+                                <select id="priority-select" name="priority" value={issue?.priority} onchange={(e: any) => e.target.form.requestSubmit()}>
                                     <option value="HIGH">High</option>
                                     <option value="MEDIUM">Medium</option>
                                     <option value="LOW">Low</option>
@@ -166,8 +168,8 @@
                             </div>
 
                             <div class="property-group">
-                                <label>Assignee</label>
-                                <select name="assigneeId" value={issue?.assigneeId || ''} onchange={(e: any) => e.target.form.requestSubmit()}>
+                                <label for="assignee-select">Assignee</label>
+                                <select id="assignee-select" name="assigneeId" value={issue?.assigneeId || ''} onchange={(e: any) => e.target.form.requestSubmit()}>
                                     <option value="">Unassigned</option>
                                     {#each allUsers as appUser}
                                         <option value={appUser.id}>{appUser.name}</option>
@@ -190,7 +192,6 @@
                                 };
                             }}
                         >
-                            <!-- Fixed confirm dialogue typings -->
                             <button type="submit" class="btn-danger" onclick={(e: any) => !confirm('Are you sure you want to delete this issue?') && e.preventDefault()}>
                                 Delete Issue
                             </button>
@@ -207,6 +208,9 @@
     /* Reset & Base Layout - Matching the Pure CSS Theme */
     .app-layout { display: flex; height: 100vh; width: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; }
     *, *::before, *::after { box-sizing: border-box; }
+    
+    /* Visually hide label but keep it for accessibility to fix Svelte warning */
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 
     /* Sidebar */
     .sidebar { width: 260px; background-color: #020617; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; z-index: 20; }
@@ -283,4 +287,10 @@
     .danger-card p { margin: 0 0 20px 0; font-size: 13px; color: #9f1239; line-height: 1.5; }
     .btn-danger { width: 100%; background: white; border: 1px solid #fda4af; color: #e11d48; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .btn-danger:hover { background: #e11d48; color: white; border-color: #e11d48; }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .split-layout { flex-direction: column; }
+        .side-panel { width: 100%; }
+    }
 </style>

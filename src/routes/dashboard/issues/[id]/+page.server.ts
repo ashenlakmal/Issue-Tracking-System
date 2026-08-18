@@ -11,14 +11,14 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
     }
 
     try {
-        const user = await prisma.user.findUnique({
+        const currentUser = await prisma.user.findUnique({
             where: { id: sessionId },
             select: { id: true, name: true, role: true }
         });
 
-        if (!user) throw redirect(303, '/login');
+        if (!currentUser) throw redirect(303, '/login');
 
-        // Fetch the specific issue with its assignee and comments
+        // Fetch the specific issue
         const issue = await prisma.issue.findUnique({
             where: { id: params.id },
             include: {
@@ -27,7 +27,8 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
                 },
                 comments: {
                     include: {
-                        author: { select: { name: true, jobTitle: true } }
+                        // FIXED: Changed 'author' to 'user' to match Prisma Schema mapping
+                        user: { select: { name: true, jobTitle: true } }
                     },
                     orderBy: { createdAt: 'desc' }
                 }
@@ -42,7 +43,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
             select: { id: true, name: true, jobTitle: true }
         });
 
-        return { user, issue, allUsers };
+        return { user: currentUser, issue, allUsers };
 
     } catch (error) {
         console.error('Failed to load issue details:', error);
@@ -51,7 +52,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 };
 
 export const actions = {
-    // Action to update issue properties (Status, Priority, Assignee)
     updateIssue: async ({ request, params }) => {
         const formData = await request.formData();
         const status = formData.get('status')?.toString();
@@ -73,7 +73,6 @@ export const actions = {
         }
     },
 
-    // Action to delete the issue entirely
     deleteIssue: async ({ params }) => {
         try {
             await prisma.issue.delete({
@@ -82,11 +81,9 @@ export const actions = {
         } catch (error) {
             return fail(500, { error: 'Failed to delete issue.' });
         }
-        // Redirect back to directory after deletion
         throw redirect(303, '/dashboard/issues');
     },
 
-    // Action to post a new comment
     addComment: async ({ request, params, cookies }) => {
         const sessionId = cookies.get('session');
         const formData = await request.formData();
