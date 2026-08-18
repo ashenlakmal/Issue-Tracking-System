@@ -11,11 +11,11 @@
     // RBAC: Dynamic permissions
     let isAdmin = $derived(currentUser?.role === 'ADMIN');
     let isAssignee = $derived(issue?.assigneeId === currentUser?.id);
-    let isReporter = $derived(issue?.creatorId === currentUser?.id); // Is current user the creator?
+    let isReporter = $derived(issue?.creatorId === currentUser?.id);
     
-    // Admins & Reporters can edit properties. Assignees can only edit Status.
     let canEditStatus = $derived(isAdmin || isAssignee || isReporter);
     let canEditProperties = $derived(isAdmin || isReporter);
+    let canDelete = $derived(isAdmin || isReporter); // FIXED: Reporter can now see the delete button
 
     const formatDate = (dateString: string | null | Date) => {
         if (!dateString) return 'No Date';
@@ -32,7 +32,7 @@
     <aside class="sidebar">
         <div class="brand">
             <svg class="brand-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
             <span class="brand-text">Tracker<span>Pro</span></span>
         </div>
@@ -75,7 +75,7 @@
         <div class="content-scroll">
             <div class="split-layout">
                 
-                <!-- Left Column: Details & Comments -->
+                <!-- Left Column -->
                 <div class="main-content">
                     <div class="issue-header-card">
                         <div class="issue-title-area">
@@ -121,7 +121,7 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Properties & Actions -->
+                <!-- Right Column -->
                 <div class="side-panel">
                     <div class="properties-card">
                         <h3>Properties</h3>
@@ -157,8 +157,8 @@
                         </form>
                     </div>
 
-                    <!-- Only Admins see Delete -->
-                    {#if isAdmin}
+                    <!-- Admins and Reporters see Delete -->
+                    {#if canDelete}
                         <div class="danger-card">
                             <h3>Danger Zone</h3>
                             <p>Once you delete an issue, there is no going back. Please be certain.</p>
@@ -171,7 +171,7 @@
     </main>
 
     <!-- Delete Modal -->
-    {#if showDeleteModal && isAdmin}
+    {#if showDeleteModal && canDelete}
         <div class="modal-backdrop">
             <div class="modal-card">
                 <div class="modal-content">
@@ -199,7 +199,7 @@
     .role-badge .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
     .role-badge .badge.admin { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
     .role-badge .badge.user { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-    .role-badge .badge.reporter { background-color: #fef3c7; color: #e11d48; border: 1px solid #fecdd3; } /* Special badge for Reporter */
+    .role-badge .badge.reporter { background-color: #fef3c7; color: #e11d48; border: 1px solid #fecdd3; } 
 
     /* The rest is identical to the previous Pure CSS theme */
     .app-layout { display: flex; height: 100vh; width: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; }
