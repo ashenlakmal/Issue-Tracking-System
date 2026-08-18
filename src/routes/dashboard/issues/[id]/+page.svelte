@@ -4,9 +4,11 @@
     import { toast } from 'svelte-sonner';
 
     let { data } = $props();
+    
+    // FIXED: Added $derived to all variables that depend on 'data' to remove Svelte warnings
     let issue = $derived(data.issue);
-    let allUsers = data.allUsers;
-    let currentUser = data.user;
+    let allUsers = $derived(data.allUsers || []);
+    let currentUser = $derived(data.user);
 
     const formatDate = (dateString: string | null | Date) => {
         if (!dateString) return 'No Date';
@@ -21,7 +23,7 @@
     <aside class="sidebar">
         <div class="brand">
             <svg class="brand-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
             <span class="brand-text">Tracker<span>Pro</span></span>
         </div>
@@ -116,7 +118,6 @@
                             {:else}
                                 {#each issue.comments as comment}
                                     <div class="comment-card">
-                                        <!-- FIXED: Changed 'author' to 'user' -->
                                         <div class="comment-avatar">{comment.user.name.charAt(0)}</div>
                                         <div class="comment-content">
                                             <div class="comment-header">
@@ -147,7 +148,6 @@
                                 };
                             }}
                         >
-                            <!-- FIXED: Added 'id' to selects and 'for' to labels to fix Svelte Warning -->
                             <div class="property-group">
                                 <label for="status-select">Status</label>
                                 <select id="status-select" name="status" value={issue?.status} onchange={(e: any) => e.target.form.requestSubmit()}>
@@ -209,7 +209,6 @@
     .app-layout { display: flex; height: 100vh; width: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; }
     *, *::before, *::after { box-sizing: border-box; }
     
-    /* Visually hide label but keep it for accessibility to fix Svelte warning */
     .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 
     /* Sidebar */

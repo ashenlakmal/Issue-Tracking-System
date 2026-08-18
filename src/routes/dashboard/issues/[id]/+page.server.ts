@@ -27,7 +27,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
                 },
                 comments: {
                     include: {
-                        // FIXED: Changed 'author' to 'user' to match Prisma Schema mapping
                         user: { select: { name: true, jobTitle: true } }
                     },
                     orderBy: { createdAt: 'desc' }
@@ -94,15 +93,17 @@ export const actions = {
         }
 
         try {
+            // FIXED: Using Prisma 'connect' to safely link relations without worrying about exact ID field names
             await prisma.comment.create({
                 data: {
                     text,
-                    issueId: params.id,
-                    authorId: sessionId as string
+                    issue: { connect: { id: params.id } },
+                    user: { connect: { id: sessionId as string } }
                 }
             });
             return { success: true };
         } catch (error) {
+            console.error('Comment creation error:', error);
             return fail(500, { error: 'Failed to add comment.' });
         }
     }
