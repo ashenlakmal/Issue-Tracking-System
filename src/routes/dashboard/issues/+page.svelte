@@ -1,3 +1,4 @@
+<!-- src/routes/dashboard/issues/+page.svelte -->
 <script lang="ts">
     import { enhance } from '$app/forms';
 
@@ -32,6 +33,7 @@
 
 <div class="app-layout">
     
+    <!-- Premium Dark Sidebar (Matching Dashboard) -->
     <aside class="sidebar">
         <div class="brand">
             <svg class="brand-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,12 +47,14 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                 Dashboard
             </a>
+            <!-- Active State -->
             <a href="/dashboard/issues" class="nav-item active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                 All Issues
             </a>
         </nav>
 
+        <!-- Sidebar Footer (Logout) -->
         <div class="sidebar-footer">
             <form action="/logout" method="POST" use:enhance>
                 <button type="submit" class="btn-logout">
@@ -61,6 +65,7 @@
         </div>
     </aside>
 
+    <!-- Main Workspace -->
     <main class="main-area">
         <header class="top-header">
             <h1>All Issues</h1>
@@ -70,6 +75,7 @@
             <div class="toolbar">
                 <h2>Issue Directory</h2>
                 
+                <!-- Filter Dropdown Container -->
                 <div class="filter-container">
                     <button class="btn-filter" onclick={() => isFilterMenuOpen = !isFilterMenuOpen}>
                         <svg class="filter-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
@@ -79,11 +85,13 @@
                         {/if}
                     </button>
 
+                    <!-- Filter Menu -->
                     {#if isFilterMenuOpen}
                         <div class="filter-dropdown">
                             <div class="filter-group">
-                                <label>Status</label>
-                                <select bind:value={selectedStatus}>
+                                <!-- FIXED: Added 'for' and 'id' to fix Svelte a11y warning -->
+                                <label for="filter-status">Status</label>
+                                <select id="filter-status" bind:value={selectedStatus}>
                                     <option value="ALL">All Statuses</option>
                                     <option value="OPEN">Open</option>
                                     <option value="IN_PROGRESS">In Progress</option>
@@ -92,8 +100,9 @@
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label>Priority</label>
-                                <select bind:value={selectedPriority}>
+                                <!-- FIXED: Added 'for' and 'id' to fix Svelte a11y warning -->
+                                <label for="filter-priority">Priority</label>
+                                <select id="filter-priority" bind:value={selectedPriority}>
                                     <option value="ALL">All Priorities</option>
                                     <option value="HIGH">High</option>
                                     <option value="MEDIUM">Medium</option>
@@ -111,6 +120,7 @@
                 </div>
             </div>
 
+            <!-- Ultra-Clean Data Table -->
             <div class="table-card">
                 <table class="data-table">
                     <thead>
@@ -138,6 +148,7 @@
                         {:else}
                             {#each filteredIssues as issue}
                                 <tr>
+                                    <!-- Title & Icon -->
                                     <td class="pl-wide">
                                         <div class="issue-cell">
                                             <div class="type-icon {issue.type.toLowerCase()}">
@@ -154,6 +165,7 @@
                                         </div>
                                     </td>
 
+                                    <!-- Status Badge -->
                                     <td>
                                         <span class="badge {getStatusClass(issue.status)}">
                                             <span class="dot"></span>
@@ -161,6 +173,7 @@
                                         </span>
                                     </td>
 
+                                    <!-- Priority -->
                                     <td>
                                         <div class="priority {issue.priority.toLowerCase()}">
                                             {#if issue.priority === 'HIGH'}
@@ -173,6 +186,7 @@
                                         </div>
                                     </td>
 
+                                    <!-- Assignee -->
                                     <td>
                                         {#if issue.assignee}
                                             <div class="user-cell">
@@ -187,17 +201,18 @@
                                         {/if}
                                     </td>
 
+                                    <!-- Due Date -->
                                     <td>
                                         <span class="date-text">{formatDate(issue.dueDate)}</span>
                                     </td>
 
                                     <!-- Action Button -->
-                                <td class="text-right pr-wide">
-                                    <a href="/dashboard/issues/{issue.id}" data-sveltekit-reload class="btn-open">
-                                        Open
-                                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                                    </a>
-                                </td>
+                                    <td class="text-right pr-wide">
+                                        <a href="/dashboard/issues/{issue.id}" data-sveltekit-reload class="btn-open">
+                                            Open
+                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                        </a>
+                                    </td>
                                 </tr>
                             {/each}
                         {/if}
@@ -208,6 +223,7 @@
     </main>
 </div>
 
+<!-- 100% Reliable Pure CSS -->
 <style>
     /* Reset & Base Layout */
     .app-layout {
