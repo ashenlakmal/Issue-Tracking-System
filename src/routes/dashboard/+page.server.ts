@@ -21,16 +21,41 @@ export const load: PageServerLoad = async ({ cookies }) => {
             throw redirect(303, '/login');
         }
 
+        // 1. Get Overall Statistics
         const totalIssues = await prisma.issue.count();
+        const openIssues = await prisma.issue.count({ where: { status: 'OPEN' } });
+        const inProgressIssues = await prisma.issue.count({ where: { status: 'IN_PROGRESS' } });
+        const resolvedIssues = await prisma.issue.count({ where: { status: 'RESOLVED' } });
 
-        // Fetch all users to populate the "Assignee" dropdown
+        // 2. Get "My Active Tasks" (Assigned to the current logged-in user)
+        const myTasks = await prisma.issue.findMany({
+            where: {
+                assigneeId: sessionId,
+                status: { notIn: ['RESOLVED', 'CLOSED'] }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 4 // Show only the top 4
+        });
+
+        // 3. Get Recent Global Issues
+        const recentIssues = await prisma.issue.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 4,
+            include: {
+                assignee: { select: { name: true } }
+            }
+        });
+
+        // Fetch all users for the Create Issue dropdown
         const allUsers = await prisma.user.findMany({
             select: { id: true, name: true, jobTitle: true }
         });
 
         return {
             user,
-            stats: { total: totalIssues, open: 0, inProgress: 0, resolved: 0 },
+            stats: { total: totalIssues, open: openIssues, inProgress: inProgressIssues, resolved: resolvedIssues },
+            myTasks,
+            recentIssues,
             allUsers
         };
 
@@ -64,7 +89,6 @@ export const actions = {
                 dueDate = new Date(dueDateString);
             }
 
-            // Save the new issue to the database
             await prisma.issue.create({
                 data: {
                     title,
