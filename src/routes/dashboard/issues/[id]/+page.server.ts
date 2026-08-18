@@ -74,12 +74,19 @@ export const actions = {
 
     deleteIssue: async ({ params }) => {
         try {
+
+            await prisma.comment.deleteMany({
+                where: { issueId: params.id }
+            });
+
             await prisma.issue.delete({
                 where: { id: params.id }
             });
         } catch (error) {
+            console.error('Delete error:', error);
             return fail(500, { error: 'Failed to delete issue.' });
         }
+
         throw redirect(303, '/dashboard/issues');
     },
 
@@ -93,7 +100,6 @@ export const actions = {
         }
 
         try {
-            // FIXED: Using Prisma 'connect' to safely link relations without worrying about exact ID field names
             await prisma.comment.create({
                 data: {
                     text,
